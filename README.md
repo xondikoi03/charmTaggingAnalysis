@@ -13,4 +13,4 @@ This repository contains resources used in the analysis of charm tagging of jets
         1. Muon $p_{T}$ > 35 GeV.
         2. Muon_pfRelIso04_all < 0.15
         3. $M_{T}$ > 55 GeV
-    - For W->$e + \nu$ Events:
+    - For W-> $e + \nu$ Events:
