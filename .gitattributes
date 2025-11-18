@@ -1,0 +1,2 @@
+datasets/nano106X_on_mini106X_2017_mc_NANOAOD_W1Jets_to_LNu_250K.root filter=lfs diff=lfs merge=lfs -text
+datasets/nano106X_on_mini106X_2017_mc_NANOAOD_W1Jets_to_LNu_50K.root filter=lfs diff=lfs merge=lfs -text
