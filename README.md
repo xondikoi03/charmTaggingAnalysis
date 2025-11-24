@@ -1,5 +1,32 @@
 # Charm Tagging Analysis:
 
+## Setting up the Environment:
+
+This specific analysis is done using `Coffea:2024.10.0` in `conda`. Here is how I set up the environment:
+
+1. Set up the `conda` environment:
+
+```bash
+conda create -n Coffea python=3.12.12
+conda activate Coffea
+```
+
+2. To install `Coffea:2024.10.0`:
+
+```
+conda install -c conda-forge coffea=2024.10.0
+```
+
+3. Is you want to install using `pip`:
+```
+pip install coffea==2024.10.0
+```
+
+4. Additionally to work on a jupyter notebook:
+```
+conda install jupyter
+```
+
 This repository contains resources used in the analysis of charm tagging of jets. This README will be updated according to the status of the Analysis.
 
 ## Status of Analysis:
