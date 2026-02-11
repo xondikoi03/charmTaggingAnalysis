@@ -23,6 +23,25 @@ plt.rcParams.update({
 def make_hist(
         data, nBins, lo, hi, xlabel, ylabel, label, fname=None, logy=False, ax=None, show=True, return_hist=False, show_stats=True, histtype='step'
 ):
+    """
+    Build and plot a 1D histogram from a (possibly dask-awkward) array.
+
+    Parameters:
+        data: Array-like (awkward/dask-awkward) values to histogram.
+        nBins, lo, hi: Histogram binning configuration.
+        xlabel, ylabel: Axis labels for the plot.
+        label: Legend label for the histogram.
+        fname: Optional path to save the figure.
+        logy: Use log scale on the y-axis.
+        ax: Optional matplotlib Axes to plot into.
+        show: Display the figure.
+        return_hist: Return computed hist object in addition to fig/ax.
+        show_stats: Add a simple stat box with entries/mean/std.
+        histtype: Passed to mplhep histplot (e.g. "step", "fill").
+
+    Returns:
+        (fig, ax) or (fig, ax, hist) when return_hist is True.
+    """
     histogram = dhist.Hist(h.axis.Regular(nBins, lo, hi))
     if ax is None:
         fig, ax = plt.subplots(1,1, figsize=(7, 5))
@@ -73,6 +92,39 @@ def make_diff_hist(
     figsize=(7, 5), grid=True, show=True, fname=None,
     return_hists=False,
 ):
+    """
+    Plot the difference of two histograms (A - B).
+
+    Accepts either two arrays or two hist objects. If arrays are provided,
+    histograms are built with the supplied binning and optional weights.
+
+    Parameters:
+        a, b: Input arrays or hist objects (both must be the same type).
+        bins, lo, hi: Histogram binning when inputs are arrays.
+        ylo, yhi: y-axis limits.
+        name: Axis name for histogram filling.
+        xlabel, ylabel: Axis labels for the plot.
+        title: Optional plot title.
+        diff_label: Legend label for the difference histogram.
+        color: Line/marker color for the difference plot.
+        histtype: mplhep histplot style (e.g. "errorbar", "step").
+        yerr: Plot y error bars when supported.
+        zero_line: Draw a horizontal line at zero.
+        normalize: Normalize both inputs before subtraction.
+        weights_a, weights_b: Optional weights for array inputs.
+        flatten: Flatten awkward arrays before filling.
+        cms_label: Draw CMS label on the plot.
+        ax: Optional matplotlib Axes to plot into.
+        figsize: Figure size when creating a new figure.
+        grid: Show grid lines.
+        show: Display the figure.
+        fname: Optional path to save the figure.
+        return_hists: Return input hists along with the difference.
+
+    Returns:
+        (fig, ax, hDiff) or (fig, ax, hDiff, hA, hB) when return_hists is True.
+    """
+
     # Detect hist input
     try:
         from hist.basehist import BaseHist
@@ -171,6 +223,33 @@ def make_overlay_hist(
     weights_a=None, weights_b=None, flatten=False, cms_label=True, ax=None, figsize=(7, 5), grid=True,
     fname=None, show=True, yerr=False, linewidth=1.5,     
 ):
+    """
+    Plot two histograms overlaid for comparison.
+
+    Parameters:
+        data_a, data_b: Input arrays to histogram and overlay.
+        bins, x_range: Histogram binning when inputs are arrays.
+        name: Axis name for histogram filling.
+        histtype: mplhep histplot style (e.g. "step", "fill").
+        xlabel, ylabel: Axis labels for the plot.
+        title: Optional plot title.
+        normalize: Normalize each histogram to unit area.
+        labels: Legend labels for the two histograms.
+        colors: Plot colors for the two histograms.
+        weights_a, weights_b: Optional weights for inputs.
+        flatten: Flatten awkward arrays before filling.
+        cms_label: Draw CMS label on the plot.
+        ax: Optional matplotlib Axes to plot into.
+        figsize: Figure size when creating a new figure.
+        grid: Show grid lines.
+        fname: Optional path to save the figure.
+        show: Display the figure.
+        yerr: Plot y error bars when supported.
+        linewidth: Line width when using step histtype.
+
+    Returns:
+        (fig, ax, hA, hB)
+    """
     def _prep(x):
         if flatten:
             try:
@@ -259,6 +338,22 @@ def make_overlay_hist(
 # OS-SS histogram function:
 
 def os_ss_hist(x_os, x_ss, *, bins=20, lo=20, hi=200, name="pt", label=None, normalize=False):
+    """
+    Build an OS-SS (opposite-sign minus same-sign) histogram.
+
+    Parameters:
+        x_os, x_ss: Input arrays for opposite-sign and same-sign samples.
+        bins, lo, hi: Histogram binning configuration.
+        name: Axis name for histogram filling.
+        label: Axis label override (defaults to name).
+        normalize: Normalize the OS-SS histogram to unit area.
+
+    Returns:
+        Computed hist object for OS-SS.
+    """
+    """
+    
+    """
     axis = h.axis.Regular(bins, lo, hi, name=name, label=(label if label else name))
     hOS_d = h.dask.Hist(axis)
     hSS_d = h.dask.Hist(axis)
