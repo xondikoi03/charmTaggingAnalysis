@@ -18,10 +18,11 @@ plt.rcParams.update({
     "ytick.labelsize": 12,
     "legend.fontsize": 12
 })
-
+###############################
 # Histogram Function:
+###############################
 def make_hist(
-        data, nBins, lo, hi, xlabel, ylabel, label, fname=None, logy=False, ax=None, show=True, return_hist=False, show_stats=True, histtype='step'
+        data, nBins, lo, hi, xlabel, ylabel, label, fname=None, logy=False, ax=None, show=True, return_hist=False, show_stats=True, histtype='step', title=None
 ):
     """
     Build and plot a 1D histogram from a (possibly dask-awkward) array.
@@ -38,21 +39,23 @@ def make_hist(
         return_hist: Return computed hist object in addition to fig/ax.
         show_stats: Add a simple stat box with entries/mean/std.
         histtype: Passed to mplhep histplot (e.g. "step", "fill").
+        title: Optional plot title.
 
     Returns:
         (fig, ax) or (fig, ax, hist) when return_hist is True.
     """
     histogram = dhist.Hist(h.axis.Regular(nBins, lo, hi))
     if ax is None:
-        fig, ax = plt.subplots(1,1, figsize=(7, 5))
+        fig, ax = plt.subplots(1,1, figsize=(8, 6))
     else:
         fig = ax.figure
     histogram.fill(data)
     hist_comp = histogram.compute()
 
-    mh.histplot(hist_comp, ax=ax, label=label, histtype=histtype, lw=1)
+    mh.histplot(hist_comp, ax=ax, label=label, histtype=histtype, lw=2, color="C1")
     mh.cms.label("Open Data", data=True, lumi=None, com=13, year=2016, loc=0)
-
+    if title:
+        ax.set_title(title)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.legend()
@@ -84,13 +87,14 @@ def make_hist(
         return fig, ax, hist_comp
     return fig, ax
 
-
+########################################
 # Making Difference Histogram Function:
+########################################
 def make_diff_hist(
     a, b, *, bins=50, lo=0, hi=200, ylo=-1, yhi=2000, name="x",
     xlabel=None, ylabel="Entries", title=None, diff_label="A - B", color="k", histtype="errorbar", yerr=False, zero_line=True, normalize=False, weights_a=None,weights_b=None, flatten=False, cms_label=True, ax=None,
-    figsize=(7, 5), grid=True, show=True, fname=None,
-    return_hists=False,
+    figsize=(8, 6), grid=True, show=True, fname=None,
+    return_hists=False, return_errors=False,
 ):
     """
     Plot the difference of two histograms (A - B).
@@ -99,7 +103,7 @@ def make_diff_hist(
     histograms are built with the supplied binning and optional weights.
 
     Parameters:
-        a, b: Input arrays or hist objects (both must be the same type).
+        a, b: Input arrays or hist objects (both must be the same type). If not a hist, it converts it hist objects.
         bins, lo, hi: Histogram binning when inputs are arrays.
         ylo, yhi: y-axis limits.
         name: Axis name for histogram filling.
@@ -120,9 +124,11 @@ def make_diff_hist(
         show: Display the figure.
         fname: Optional path to save the figure.
         return_hists: Return input hists along with the difference.
+        return_errors: Return per-bin uncertainties for the difference.
 
     Returns:
-        (fig, ax, hDiff) or (fig, ax, hDiff, hA, hB) when return_hists is True.
+        (fig, ax, hDiff), (fig, ax, hDiff, err), or
+        (fig, ax, hDiff, err, hA, hB) when return_hists/return_errors are True.
     """
 
     # Detect hist input
@@ -182,6 +188,12 @@ def make_diff_hist(
             hB = hB / sB
 
     hDiff = hA - hB
+    err = None
+    if yerr or return_errors:
+        try:
+            err = np.sqrt(hA.variances() + hB.variances())
+        except Exception:
+            err = None
 
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
@@ -191,7 +203,8 @@ def make_diff_hist(
     if cms_label:
         mh.cms.label("Open Data", data=True, lumi=None, com=13, year=2016, loc=0)
 
-    mh.histplot(hDiff, ax=ax, label=diff_label, histtype=histtype, color=color, yerr=yerr)
+    plot_yerr = err if err is not None else yerr
+    mh.histplot(hDiff, ax=ax, label=diff_label, histtype=histtype, color=color, yerr=plot_yerr)
 
     if zero_line:
         ax.axhline(0.0, color="0.5", lw=1, linestyle="--")
@@ -210,17 +223,22 @@ def make_diff_hist(
     if show:
         plt.show()
 
+    if return_hists and return_errors:
+        return fig, ax, hDiff, err, hA, hB
     if return_hists:
         return fig, ax, hDiff, hA, hB
+    if return_errors:
+        return fig, ax, hDiff, err
     return fig, ax, hDiff
 
-
+###############################
 # Overlay Histogram Function:
+###############################
 def make_overlay_hist(
     data_a, data_b, *, bins=50, x_range=(0, 200), name="x",
     histtype="step", xlabel=None, ylabel=None, title=None,
     normalize=True, labels=("A", "B"), colors=("C0", "C1"),
-    weights_a=None, weights_b=None, flatten=False, cms_label=True, ax=None, figsize=(7, 5), grid=True,
+    weights_a=None, weights_b=None, flatten=False, cms_label=True, ax=None, figsize=(8, 6), grid=True,
     fname=None, show=True, yerr=False, linewidth=1.5,     
 ):
     """
@@ -335,7 +353,9 @@ def make_overlay_hist(
 
     return fig, ax, hA, hB
 
+###############################
 # OS-SS histogram function:
+###############################
 
 def os_ss_hist(x_os, x_ss, *, bins=20, lo=20, hi=200, name="pt", label=None, normalize=False):
     """
@@ -365,3 +385,4 @@ def os_ss_hist(x_os, x_ss, *, bins=20, lo=20, hi=200, name="pt", label=None, nor
         if s != 0:
             hDiff = hDiff / s
     return hDiff
+
