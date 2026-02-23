@@ -94,7 +94,7 @@ def make_diff_hist(
     a, b, *, bins=50, lo=0, hi=200, ylo=-1, yhi=2000, name="x",
     xlabel=None, ylabel="Entries", title=None, diff_label="A - B", color="k", histtype="errorbar", yerr=False, zero_line=True, normalize=False, weights_a=None,weights_b=None, flatten=False, cms_label=True, ax=None,
     figsize=(8, 6), grid=True, show=True, fname=None,
-    return_hists=False, return_errors=False,
+    return_hists=False, return_errors=False, show_yield=False, yield_loc="upper right", label_loc="best",
 ):
     """
     Plot the difference of two histograms (A - B).
@@ -125,6 +125,9 @@ def make_diff_hist(
         fname: Optional path to save the figure.
         return_hists: Return input hists along with the difference.
         return_errors: Return per-bin uncertainties for the difference.
+        show_yield: Display signal yield (integral ± error) in a text box.
+        yield_loc: Location of yield text box (e.g., "upper right", "upper left").
+        label_loc: Location of legend (e.g., "best", "upper left", "upper right").
 
     Returns:
         (fig, ax, hDiff), (fig, ax, hDiff, err), or
@@ -209,13 +212,23 @@ def make_diff_hist(
     if zero_line:
         ax.axhline(0.0, color="0.5", lw=1, linestyle="--")
 
+    if show_yield:
+        try:
+            n_sig = float(hDiff.values().sum())
+            n_err = float(np.sqrt((hA.variances() + hB.variances()).sum())) if (hA.variances() is not None and hB.variances() is not None) else 0.0
+            yield_text = f"Signal Yield:\n{n_sig:.1f} $\\pm$ {n_err:.1f}"
+            at = AnchoredText(yield_text, loc=yield_loc, frameon=True, prop=dict(size=10))
+            ax.add_artist(at)
+        except Exception:
+            pass
+
     if title:
         ax.set_title(title)
 
     ax.set_xlabel(xlabel if xlabel is not None else name)
     ax.set_ylabel(ylabel)
     ax.set_ylim(ylo, yhi)
-    ax.legend()
+    ax.legend(loc=label_loc)
     if grid:
         ax.grid(True, alpha=0.3)
     if fname:
